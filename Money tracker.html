@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>ตัวช่วยคำนวณเงินหลายบัญชี</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: sans-serif; padding: 16px; background: #f5f5f5; }
+    h1 { text-align: center; font-size: 1.4rem; }
+    .card { background: white; padding: 16px; border-radius: 10px; margin-bottom: 16px; }
+    input, button { padding: 10px; font-size: 1rem; }
+    input { width: 100%; margin-top: 8px; }
+    button { border: none; border-radius: 6px; cursor: pointer; }
+    .btn-main { background: #2563eb; color: white; width: 100%; margin-top: 8px; }
+    .btn-secondary { background: #e5e7eb; width: 100%; margin-top: 8px; }
+    table {width: 100%;border-collapse: collapse;margin-top: 10px;}
+        th, td {
+  padding: 10px 8px;
+  border-bottom: 1px solid #ddd;
+  vertical-align: middle;
+  word-break: break-word;
+	}
+	th {
+  background: #f3f4f6;
+  font-weight: 600;
+  text-align: center;
+	}
+        td:nth-child(1) { width: 25%; }   /* รายการ */
+        td:nth-child(2) { width: 20%; text-align: right; } /* จำนวนเงิน */
+        td:nth-child(3) { width: 40%; }   /* หมายเหตุ */
+        td:nth-child(4) { width: 15%; text-align: center; } /* ปุ่มจัดการ */
+        .btn-small {padding: 6px 10px;font-size: 0.8rem;border-radius: 6px;margin: 2px 0;width: 48%;}
+        .btn-edit { background: #facc15; }
+        .btn-delete { background: #ef4444; color: white; }
+        .btn-save { background: #22c55e; color: white; }
+        .btn-cancel { background: #9ca3af; color: white; }
+    .menu { display: flex; gap: 8px; margin-bottom: 16px; }
+    .menu button { flex: 1; padding: 10px; }
+    .active { background: #2563eb; color: white; }
+  </style>
+</head>
+<body>
+
+<h1>คำนวณเงินหลายบัญชี</h1>
+
+<div class="menu">
+  <button onclick="switchAccount('kept')" id="btn-kept">บัญชี KEPT</button>
+  <button onclick="switchAccount('krungsri')" id="btn-krungsri">บัญชีกรุงศรี</button>
+  <button onclick="switchAccount('stock')" id="btn-stock">หุ้น</button>
+</div>
+
+<div class="card">
+  <label>เงินทั้งหมด (บาท)</label>
+  <input type="number" id="totalMoney" placeholder="เช่น 100000">
+  <button class="btn-main" onclick="setTotal()">ตั้งค่าเงินทั้งหมด</button>
+  <button class="btn-secondary" onclick="resetAll()">ล้างข้อมูลบัญชีนี้</button>
+
+  <div id="summary" style="margin-top:12px; display:none;">
+    เงินทั้งหมด: <b id="totalDisplay">0</b> บาท<br>
+    รวมรายจ่าย: <b id="spentDisplay">0</b> บาท<br>
+    ยอดคงเหลือ: <b id="remainDisplay">0</b> บาท
+  </div>
+</div>
+
+<div class="card">
+  <label>รายการ</label>
+  <input type="text" id="itemName" placeholder="เช่น ประกัน, หุ้นไทย">
+
+  <label>จำนวนเงิน (บาท)</label>
+  <input type="number" id="itemAmount" placeholder="เช่น 15000">
+
+  <label>หมายเหตุ</label>
+  <input type="text" id="itemNote" placeholder="เช่น รายปี, DCA, ค่าใช้จ่ายอื่นๆ">
+
+  <button class="btn-main" onclick="addItem()">เพิ่มรายการ</button>
+
+  <table id="itemsTable" style="display:none;">
+    <thead>
+      <tr>
+        <th>รายการ</th>
+        <th class="right">จำนวนเงิน</th>
+        <th>หมายเหตุ</th>
+        <th>จัดการ</th>
+      </tr>
+    </thead>
+    <tbody id="itemsBody"></tbody>
+  </table>
+</div>
+
+<script>
+  let currentAccount = "kept";
+
+  let data = {
+    kept: { total: 0, items: [] },
+    krungsri: { total: 0, items: [] },
+    stock: { total: 0, items: [] }
+  };
+
+  function saveData() {
+    localStorage.setItem("moneyData", JSON.stringify(data));
+  }
+
+  function loadData() {
+    const saved = localStorage.getItem("moneyData");
+    if (saved) data = JSON.parse(saved);
+    render();
+  }
+
+  function switchAccount(acc) {
+    currentAccount = acc;
+    document.querySelectorAll(".menu button").forEach(btn => btn.classList.remove("active"));
+    document.getElementById("btn-" + acc).classList.add("active");
+    render();
+  }
+
+  function format(n) {
+    return Number(n).toLocaleString('th-TH', { minimumFractionDigits: 2 });
+  }
+
+  function setTotal() {
+    const v = parseFloat(document.getElementById('totalMoney').value);
+    if (isNaN(v) || v < 0) return alert("กรุณาใส่จำนวนเงินให้ถูกต้อง");
+    data[currentAccount].total = v;
+    saveData();
+    render();
+  }
+
+  function addItem() {
+    const name = document.getElementById('itemName').value.trim();
+    const amount = parseFloat(document.getElementById('itemAmount').value);
+    const note = document.getElementById('itemNote').value.trim();
+
+    if (!name) return alert("กรุณาใส่ชื่อรายการ");
+    if (isNaN(amount) || amount <= 0) return alert("จำนวนเงินไม่ถูกต้อง");
+
+    data[currentAccount].items.push({ name, amount, note });
+
+    document.getElementById('itemName').value = "";
+    document.getElementById('itemAmount').value = "";
+    document.getElementById('itemNote').value = "";
+
+    saveData();
+    render();
+  }
+
+  function editItem(index) {
+    const row = document.getElementById("row-" + index);
+    const item = data[currentAccount].items[index];
+
+    row.innerHTML = `
+      <td><input id="edit-name-${index}" value="${item.name}"></td>
+      <td><input id="edit-amount-${index}" type="number" value="${item.amount}" class="right"></td>
+      <td><input id="edit-note-${index}" value="${item.note || ""}"></td>
+      <td>
+        <button class="btn-small btn-save" onclick="saveEdit(${index})">บันทึก</button>
+        <button class="btn-small btn-cancel" onclick="render()">ยกเลิก</button>
+      </td>
+    `;
+  }
+
+  function saveEdit(index) {
+    const newName = document.getElementById("edit-name-" + index).value.trim();
+    const newAmount = parseFloat(document.getElementById("edit-amount-" + index).value);
+    const newNote = document.getElementById("edit-note-" + index).value.trim();
+
+    if (!newName) return alert("กรุณาใส่ชื่อรายการ");
+    if (isNaN(newAmount) || newAmount <= 0) return alert("จำนวนเงินไม่ถูกต้อง");
+
+    data[currentAccount].items[index] = { 
+      name: newName, 
+      amount: newAmount,
+      note: newNote
+    };
+
+    saveData();
+    render();
+  }
+
+  function deleteItem(index) {
+    if (!confirm("ต้องการลบรายการนี้ใช่ไหม")) return;
+    data[currentAccount].items.splice(index, 1);
+    saveData();
+    render();
+  }
+
+  function resetAll() {
+    if (!confirm("ล้างข้อมูลบัญชีนี้ทั้งหมดใช่ไหม")) return;
+    data[currentAccount] = { total: 0, items: [] };
+    saveData();
+    render();
+  }
+
+  function render() {
+    const acc = data[currentAccount];
+
+    document.getElementById('totalMoney').value = acc.total || "";
+
+    const spent = acc.items.reduce((s, i) => s + i.amount, 0);
+    const remain = acc.total - spent;
+
+    document.getElementById('summary').style.display = acc.total > 0 ? "block" : "none";
+    document.getElementById('totalDisplay').textContent = format(acc.total);
+    document.getElementById('spentDisplay').textContent = format(spent);
+    document.getElementById('remainDisplay').textContent = format(remain);
+    document.getElementById('remainDisplay').className = remain < 0 ? "danger" : "";
+
+    const body = document.getElementById('itemsBody');
+    body.innerHTML = "";
+
+    acc.items.forEach((i, index) => {
+      body.innerHTML += `
+<tr id="row-${index}">
+  <td>${i.name}</td>
+  <td class="right">${format(i.amount)}</td>
+  <td>${i.note || "-"}</td>
+  <td>
+    <button class="btn-small btn-edit" onclick="editItem(${index})">แก้ไข</button>
+    <button class="btn-small btn-delete" onclick="deleteItem(${index})">ลบ</button>
+  </td>
+</tr>
+      `;
+    });
+
+    document.getElementById('itemsTable').style.display = acc.items.length ? "table" : "none";
+  }
+
+  loadData();
+  switchAccount("kept");
+</script>
+
+</body>
+</html>
