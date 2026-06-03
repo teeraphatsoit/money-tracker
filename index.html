@@ -291,7 +291,7 @@
     const newNote = document.getElementById("edit-note-" + index).value.trim();
 
     if (!newName) return alert("กรุณาใส่ชื่อรายการ");
-    if (isNaN(newAmount) || newAmount <= 0) return alert("จำนวนเงินไม่ถูกต้อง");
+    if (isNaN(newAmount) || newAmount < 0) return alert("จำนวนเงินไม่ถูกต้อง");
 
     data[currentAccount].items[index] = { 
       name: newName, 
