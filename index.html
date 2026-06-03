@@ -111,6 +111,26 @@
       color: red;
       font-weight: bold;
     }
+    /* บังคับให้ตารางไม่บีบคอลัมน์จนผิดรูป */
+    table {
+    table-layout: auto;
+    }
+
+    /* บังคับให้คอลัมน์จำนวนเงินไม่ถูกบีบ */
+    td.right {
+    white-space: nowrap;
+    }
+
+    /* บังคับให้คอลัมน์รายการไม่ตัดคำผิด */
+    td:first-child {
+    white-space: nowrap;
+    }
+
+    /* ถ้าตารางกว้างเกิน → เลื่อนซ้าย–ขวาแทน */
+    .table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    }
   </style>
 </head>
 
