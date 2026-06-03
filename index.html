@@ -175,6 +175,10 @@
   <input type="number" id="totalMoney" placeholder="เช่น 100000">
   <button class="btn-main" onclick="setTotal()">ตั้งค่าเงินทั้งหมด</button>
   <button class="btn-secondary" onclick="resetAll()">ล้างข้อมูลบัญชีนี้</button>
+  <button class="btn-secondary" onclick="backupData()">Backup ข้อมูล</button>
+  <input type="file" id="restoreFile" style="display:none;" onchange="restoreData(event)">
+  <button class="btn-secondary" onclick="document.getElementById('restoreFile').click()">Restore ข้อมูล</button>
+
 
   <div id="summary" style="margin-top:12px; display:none;">
     เงินทั้งหมด: <b id="totalDisplay">0</b> บาท<br>
@@ -349,6 +353,45 @@
 
   loadData();
   switchAccount("kept");
+
+  function backupData() {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "money-backup.json";
+  a.click();
+
+  URL.revokeObjectURL(url);
+  alert("Backup สำเร็จแล้ว");
+}
+
+function restoreData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const imported = JSON.parse(e.target.result);
+      if (!imported.kept || !imported.krungsri || !imported.stock) {
+        alert("ไฟล์ไม่ถูกต้อง");
+        return;
+      }
+
+      data = imported;
+      saveData();
+      render();
+      alert("Restore สำเร็จแล้ว");
+    } catch {
+      alert("ไฟล์เสียหรือไม่ถูกต้อง");
+    }
+  };
+
+  reader.readAsText(file);
+}
+
 </script>
 
 </body>
