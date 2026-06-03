@@ -258,7 +258,7 @@
     const note = document.getElementById('itemNote').value.trim();
 
     if (!name) return alert("กรุณาใส่ชื่อรายการ");
-    if (isNaN(amount) || amount <= 0) return alert("จำนวนเงินไม่ถูกต้อง");
+    if (isNaN(amount) || amount < 0) return alert("จำนวนเงินไม่ถูกต้อง");
 
     data[currentAccount].items.push({ name, amount, note });
 
