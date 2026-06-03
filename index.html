@@ -37,6 +37,22 @@
     .menu { display: flex; gap: 8px; margin-bottom: 16px; }
     .menu button { flex: 1; padding: 10px; }
     .active { background: #2563eb; color: white; }
+    /* ทำให้ตารางเลื่อนซ้าย–ขวาได้บนมือถือ */
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+/* บังคับให้ปุ่มอยู่ในบรรทัดเดียวกันแบบไม่ดันตาราง */
+.col-actions {
+  white-space: nowrap;
+}
+
+/* ลดขนาดปุ่มให้พอดีกับมือถือ */
+.btn-small {
+  padding: 6px 8px;
+  font-size: 0.75rem;
+}
   </style>
 </head>
 <body>
@@ -74,17 +90,18 @@
 
   <button class="btn-main" onclick="addItem()">เพิ่มรายการ</button>
 
-  <table id="itemsTable" style="display:none;">
-    <thead>
-      <tr>
-        <th>รายการ</th>
-        <th class="right">จำนวนเงิน</th>
-        <th>หมายเหตุ</th>
-        <th>จัดการ</th>
-      </tr>
-    </thead>
-    <tbody id="itemsBody"></tbody>
-  </table>
+  <div class="table-wrapper">
+    <table id="itemsTable" style="display:none;">
+        <thead>
+            <tr>
+                <th>รายการ</th>
+                <th class="right">จำนวนเงิน</th>
+                <th>หมายเหตุ</th>
+                <th class="col-actions">จัดการ</th>
+            </tr>
+        </thead>
+        <tbody id="itemsBody"></tbody>
+    </table>
 </div>
 
 <script>
