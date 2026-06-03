@@ -131,6 +131,32 @@
     width: 100%;
     overflow-x: auto;
     }
+    /* บังคับให้ Safari ไม่บีบตาราง */
+    table {
+    table-layout: auto;
+    width: max-content;   /* ให้ตารางกว้างเท่าที่ต้องการ */
+    }
+
+    /* ให้ wrapper เป็นตัวคุมความกว้างแทน */
+    .table-wrapper {
+    width: 100%;
+    overflow-x: auto;      /* เลื่อนซ้าย–ขวาได้ */
+    }
+
+    /* ไม่ให้คอลัมน์จำนวนเงินโดนบีบ */
+    td.right {
+    white-space: nowrap;
+    }
+
+    /* ไม่ให้คอลัมน์รายการโดนตัดคำ */
+    td:first-child {
+    white-space: nowrap;
+    }
+
+    /* ป้องกันคอลัมน์จัดการโดนบีบ */
+    .col-actions {
+    white-space: nowrap;
+    }
   </style>
 </head>
 
